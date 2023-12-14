@@ -1,22 +1,26 @@
 import 'dart:convert';
 import 'dart:html' as html;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 class MyHttpClient {
-  Future<Map<String, dynamic>> post(
-      String url, Map<String, String> body) async {
-    final response = await html.HttpRequest.postFormData(url, body);
-    return _decodeResponse(response);
+  final Dio _dio = Dio();
+
+  Future<Map<String, dynamic>> get(String url) async {
+    final response = await _dio.get(url);
+    return _decodeResponse(response.data);
   }
 
-  Map<String, dynamic> _decodeResponse(html.HttpRequest response) {
+  Future<Map<String, dynamic>> post(
+      String url, Map<String, String> body) async {
+    final response = await _dio.post(url, data: body);
+    return _decodeResponse(response.data);
+  }
+
+  Map<String, dynamic> _decodeResponse(dynamic response) {
     try {
-      if (response is html.HttpRequest) {
-        return jsonDecode(response.responseText ?? '');
-      } else {
-        throw Exception('Invalid response type: ${response.runtimeType}');
-      }
+      return jsonDecode(response ?? '');
     } catch (e) {
       debugPrint('Error decoding response: $e');
       throw Exception('Error decoding response: $e');
